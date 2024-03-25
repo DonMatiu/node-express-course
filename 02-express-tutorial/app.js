@@ -1,25 +1,33 @@
-console.clear();
 const express = require('express');
-const data = require('./data');
-const logger = require('./logger');
-const authorize = require('./authorize');
-const path = require('path');
+let { people } = require('./data');
 
 const app = express();
 
-app.use(logger);
-app.use('/api', authorize);
+// static assets
+app.use(express.static('./methods-public'));
+// parse form data
+app.use(express.urlencoded({ extended: false }));
+// parse json
+app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Home');
+app.get('/api/people', (req, res) => {
+  res.status(200).json({ success: true, data: people });
 });
 
-app.get('/about', (req, res) => {
-  res.send('About Page');
+app.post('/api/people', (req, res) => {
+  const { name } = req.body;
+  if (name) {
+    return res.status(201).json({ success: true, person: name });
+  }
+  res.status(400).json({ success: false, mes: 'Please provide correct username' });
 });
 
-app.get('/api/items', (req, res) => {
-  res.status(200).json(data);
+app.post('/login', (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(401).send('Please provide credentials...');
+  }
+  res.status(200).send(`Welcome ${name}`);
 });
 
 app.listen(3000, () => {
